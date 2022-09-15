@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Get, Param, Post, Res, UploadedFile, UseInterceptors} from '@nestjs/common';
+import { BadRequestException, Body, Controller, FileTypeValidator, Get, Param, ParseFilePipe, Post, Res, UploadedFile, UseInterceptors} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FilesService } from './files.service';
 import { diskStorage } from "multer";
@@ -43,4 +43,24 @@ export class FilesController {
     const secureUrl = `${this.configService.get('HOST_API')}/files/product/${file.filename}`;
     return {secureUrl};
   }
+
+  @Post('product2')
+  uploadProductImage2(
+    @Body() body,
+    @UploadedFile(
+      new ParseFilePipe({ // no funciona
+        validators: [
+          new FileTypeValidator({ fileType: 'png' }), //no funciona
+        ]
+      })
+    ) file: Express.Multer.File ) {
+
+
+    console.log(file);
+
+    if (!file) throw new BadRequestException('Make sure that the file is an image');
+    const secureUrl = `${this.configService.get('HOST_API')}/files/product/${file.filename}`;
+    return {secureUrl};
+  }
+
 }

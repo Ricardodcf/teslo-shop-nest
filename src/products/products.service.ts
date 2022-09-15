@@ -6,8 +6,8 @@ import { DataSource, Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { validate as isUUID } from "uuid";
-import { prototype } from 'events';
 import { Product, ProductImage } from './entities';
+import { User } from 'src/auth/entities/user.entity';
 
 @Injectable()
 export class ProductsService {
@@ -25,13 +25,14 @@ export class ProductsService {
   ) {}
 
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, user: User) {
 
     try {
       const { images = [], ...productDetails } = createProductDto;
 
       const product = this.productRepository.create({
         ...productDetails,
+        user,
         images: images.map( image => this.productImageRepository.create({url: image}))
       });
 
@@ -107,7 +108,7 @@ export class ProductsService {
   }
 
   
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, user: User) {
 
     const { images, ...toUpdate } = updateProductDto; // aqaui en toUpdate tenemos todo excepto images para que el preload no se rompa
 
@@ -129,6 +130,7 @@ export class ProductsService {
         )
       }
 
+      product.user = user;
       await queryRunner.manager.save( product );
 
       // await this.productRepository.save(product);
